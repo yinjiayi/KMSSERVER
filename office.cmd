@@ -1,0 +1,68 @@
+
+@echo off
+
+rem Latest Office version number
+set Latest_Office_version_number=15
+
+set Office_numbers=0
+
+for /l %%a in (14,1,%Latest_Office_version_number%) do (
+	set ospp_vbs_path_%%a=
+	reg query "HKLM\SOFTWARE\Microsoft\Office\%%a.0\Common\InstallRoot" /v Path>nul 2>nul
+
+	if errorlevel 1 (
+		%windir%\syswow64\reg query "HKLM\SOFTWARE\Microsoft\Office\%%a.0\Common\InstallRoot" /v Path>nul 2>nul
+		if errorlevel 1 (
+			echo Office %%a was NOT found.>nul
+		) else if errorlevel 0 (
+			for /f "usebackq tokens=2,*" %%A in (`%windir%\syswow64\reg query "HKLM\SOFTWARE\Microsoft\Office\%%a.0\Common\InstallRoot" /v Path^|find/i "path"`) do set ospp_vbs_path_%%a=%%B
+			%windir%\syswow64\reg query "HKLM\SOFTWARE\Microsoft\Office\%%a.0\Common\InstalledPackages" /f * /k|find /i "\SOFTWARE\Microsoft\Office\%%a.0\Common\InstalledPackages">"%tmp%\OfficeRegInfo.tmp"
+			set/p FirstLine=<"%tmp%\OfficeRegInfo.tmp"
+			for /f "usebackq tokens=2,*" %%A in (`%windir%\syswow64\reg query "!FirstLine!" /ve^|find /i ")"`) do set Product_%%a=%%B
+		)
+	) else if errorlevel 0 (
+		for /f "usebackq tokens=2,*" %%A in (`reg query "HKLM\SOFTWARE\Microsoft\Office\%%a.0\Common\InstallRoot" /v Path^|find/i "path"`) do set ospp_vbs_path_%%a=%%B
+		reg query "HKLM\SOFTWARE\Microsoft\Office\%%a.0\Common\InstalledPackages" /f * /k|find /i "\SOFTWARE\Microsoft\Office\%%a.0\Common\InstalledPackages">"%tmp%\OfficeRegInfo.tmp"
+		set/p FirstLine=<"%tmp%\OfficeRegInfo.tmp"
+		for /f "usebackq tokens=2,*" %%A in (`reg query "!FirstLine!" /ve^|find /i ")"`) do set Product_%%a=%%B
+	)
+	if defined ospp_vbs_path_%%a (
+		set/a Office_numbers+=1
+		set ospp_vbs_path=!ospp_vbs_path_%%a!
+		set Product=!Product_%%a!
+	)
+)
+
+del/a/f/q "%tmp%\OfficeRegInfo.tmp" 2>nul
+
+if %Office_numbers% gtr 1 (
+	echo %Office_numbers% Office paths are found:
+	echo=
+	for /l %%a in (14,1,%Latest_Office_version_number%) do (
+		if defined ospp_vbs_path_%%a (
+		echo %%a ---- "!Product_%%a!" in "!ospp_vbs_path_%%a!"
+		)
+	)
+	echo=
+	echo Which one do you want to activate now?
+	set/p Choice=Input the number in the begining of the line:
+	if "!Choice!"=="" (
+		echo=
+		echo None of them has been chosen.
+		echo Activate Office procedure will be terminated.
+		echo=
+		exit/b 1
+	) else set p=ospp_vbs_path_!Choice!
+) else if %Office_numbers%==1 (
+	echo "!Product!" in "%ospp_vbs_path%"
+) else if %Office_numbers%==0 (
+	echo=
+	echo Office does NOT exist on your system.
+	echo If you think this is wrong, please fix windows registry.
+	echo Activate Office procedure will be terminated.
+	echo=
+	exit/b 1
+)
+
+rem Only for multi office paths
+if defined p set ospp_vbs_path=!%p%!
