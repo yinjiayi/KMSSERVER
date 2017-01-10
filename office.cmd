@@ -3,7 +3,7 @@
 
 rem Latest Office version number
 set Latest_Office_version_number=15
-
+   
 set Office_numbers=0
 
 for /l %%a in (14,1,%Latest_Office_version_number%) do (
