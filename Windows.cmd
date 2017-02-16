@@ -18,6 +18,6 @@ if errorlevel 1 (
 	reg add HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\%KeyName%\Parameters /f /v "VLActivationInterval" /d "120" /t reg_dword
 ) else if errorlevel 0 (
 	echo KMS Server Service has existed.
-)   i
+)   it
 
 sc start %KeyName%>nul 2>nul
