@@ -20,4 +20,4 @@ if errorlevel 1 (
 	echo KMS Server Service has existed.
 )   
 
-sc start %KeyName%>nul 2>nul_
+sc start %KeyName%>nul 2>nul
