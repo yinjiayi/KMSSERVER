@@ -13,7 +13,7 @@ for /f "usebackq delims== tokens=2" %%A in (`wmic process where "processid=%PID%
 	set ExecutablePath=%%~A
 	set dp=%%~dpA
 )
-
+。。。
 echo=
 
 sc stop %KeyName%>nul 2>nul
